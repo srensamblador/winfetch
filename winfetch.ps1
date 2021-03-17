@@ -202,6 +202,7 @@ $baseConfig = @(
     "disk"
     "battery"
     "locale"
+    "weather"
     "local_ip"
     "public_ip"
     "blank"
@@ -275,6 +276,7 @@ $defaultConfig = @'
     "disk"
     # "battery"
     # "locale"
+    # "weather"
     # "local_ip"
     # "public_ip"
     "blank"
@@ -763,6 +765,19 @@ function info_locale {
 }
 
 
+# ===== WEATHER =====
+function info_weather {
+    return @{
+        title = "Weather"
+        content = try {
+            (Invoke-RestMethod wttr.in/?format="%t+-+%C+(%l)").TrimStart("+")
+        } catch {
+            "$e[91m(Network Error)"
+        }
+    }
+}
+
+
 # ===== IP =====
 function info_local_ip {
     $local_ip = (Get-NetIPAddress | Where-Object {$_.AddressState -eq "Preferred" -and $_.ValidLifetime -lt "24:00:00"}).IPAddress
@@ -780,7 +795,7 @@ function info_public_ip {
     return @{
         title = "Public IP"
         content = try {
-            Invoke-RestMethod -Uri https://ifconfig.me/ip
+            Invoke-RestMethod ifconfig.me/ip
         } catch {
             "$e[91m(Network Error)"
         }
