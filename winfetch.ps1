@@ -177,6 +177,8 @@ if ($help) {
 $cimSession = New-CimSession
 $buildVersion = "$([System.Environment]::OSVersion.Version)"
 $legacylogo = $buildVersion -like "6.1*"
+$COLUMNS = 35
+$GAP = 3
 
 
 # ===== CONFIGURATION =====
@@ -288,14 +290,18 @@ if ($genconf -and (Test-Path $configPath)) {
     $choiceNo = New-Object System.Management.Automation.Host.ChoiceDescription "&No", `
         "do nothing and exit"
     $result = $Host.UI.PromptForChoice("Resetting your config to default will overwrite it.",
-            "Do you want to continue?", ($choiceYes, $choiceNo), 1)
+        "Do you want to continue?", ($choiceYes, $choiceNo), 1)
     if ($result -eq 0) { Remove-Item -Path $configPath } else { exit 1 }
 }
 
 if (-not (Test-Path $configPath) -or ((Get-Item -Path $configPath).Length -eq 0)) {
     New-Item -Type File -Path $configPath -Value $defaultConfig -Force | Out-Null
-    Write-Host "First run: Saved default config to '$configPath'."
-    if ($genconf) { exit 0 }
+    if ($genconf) {
+        Write-Host "Saved default config to '$configPath'."
+        exit 0
+    } else {
+        Write-Host "Missing config: Saved default config to '$configPath'."
+    }
 }
 
 # load config file
@@ -328,7 +334,6 @@ $img = if (-not $noimage) {
             exit 1
         }
 
-        $COLUMNS = 35
         $CURR_ROW = ""
         $CHAR = [Text.Encoding]::UTF8.GetString(@(226, 150, 128)) # 226,150,136
         $upper, $lower = @(), @()
@@ -805,7 +810,7 @@ $freeSpace = $Host.UI.RawUI.WindowSize.Width - 1
 
 # move cursor to top of image and to column 40
 if ($img -and -not $stripansi) {
-    $freeSpace -= 1 + $COLUMNS + 3
+    $freeSpace -= 1 + $COLUMNS + $GAP
     Write-Output "$e[$($img.Length + 1)A"
 }
 
