@@ -91,8 +91,7 @@ if (-not $configPath) {
     if ($env:WINFETCH_CONFIG_PATH) {
         $configPath = $env:WINFETCH_CONFIG_PATH
     } else {
-        $configDir = $env:XDG_CONFIG_HOME, "${env:USERPROFILE}\.config" | Select-Object -First 1
-        $configPath = "${configDir}\winfetch\config.ps1"
+        $configPath = "${env:USERPROFILE}\.config\winfetch\config.ps1"
     }
 }
 
