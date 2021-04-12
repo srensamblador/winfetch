@@ -39,59 +39,69 @@ goto :args
 :main
 echo.
 
-for /f "tokens=2 delims=[]" %%i in ('ver') do set OSVERSION=%%i
-for /f "tokens=2-3 delims=. " %%i in ("%OSVERSION%") do set OSVERSION=%%i.%%j
+for /f "tokens=2 delims=[]" %%i in ('ver') do set OSVersionString=%%i
+for /f "tokens=2-3 delims=. " %%i in ("%OSVersionString%") do set OSVERSION=%%i.%%j
+for /f "tokens=2-4 delims=. " %%i in ("%OSVersionString%") do set KernelVersion=%%i.%%j.%%k
 
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic path Win32_VideoController get caption /format:list ^| findstr "^Caption="`) do (set %%a=%%b)
+set count=1
+for /f "tokens=* usebackq" %%f in (`wmic path Win32_VideoController get caption^,CurrentVerticalResolution^,CurrentHorizontalResolution /format:list`) do (
+  set tempvar!count!=%%f
+  set /a count=!count!+1
+)
+for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar5%") do set %%a=%%b
 set gpu=%Caption%
 set caption=
 set gpu=%gpu:(tm) =%
 set gpu=%gpu:(r) =%
 set gpu=%gpu:(c) =%
 
-for /f "delims=" %%A IN ('wmic cpu get name') DO (call :do "%%A")
-set cpu=%c2u:~1%
+set count=1
+for /f "tokens=* usebackq" %%f in (`wmic cpu get name^,AddressWidth /format:list`) do (
+  set tempvar!count!=%%f
+  set /a count=!count!+1
+)
+for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
+
+set cpu=%name%
 set cpu=%cpu:(tm)=%
 set cpu=%cpu:(r)=%
 set cpu=%cpu:(c)=%
 
-for /f "delims=" %%A IN ('wmic path Win32_VideoController get CurrentVerticalResolution') DO (call :set %%A height)
-for /f "delims=" %%A IN ('wmic path Win32_VideoController get CurrentHorizontalResolution') DO (call :set %%A width)
+set count=1
+for /f "tokens=* usebackq" %%f in (`wmic os get Caption^,FreePhysicalMemory^,TotalVisibleMemorySize /format:list`) do (
+  set tempvar!count!=%%f
+  set /a count=!count!+1
+)
+for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar5%") do set %%a=%%b
+set /a totalram=%TotalVisibleMemorySize% / 1024
+set /a freeram=%FreePhysicalMemory% / 1024
+set /a usedram=%totalram% - %freeram%
 
-for /f "delims=" %%A IN ('wmic os get FreePhysicalMemory') DO (call :set %%A freeram)
-for /f "delims=" %%A IN ('wmic os get TotalVisibleMemorySize') DO (call :set %%A totalram)
-
-set /a totalram2=%totalram% / 1024
-set /a freeram2=%freeram% / 1024
-set /a usedram=%totalram2% - %freeram2%
-
-for /f "delims=" %%A IN ('wmic logicaldisk %SYSTEMDRIVE% get size') DO (call :do2 %%A)
-set /a all=%d2u:~0,-6% / (1074)
-for /f "delims=" %%A IN ('wmic logicaldisk %SYSTEMDRIVE% get freespace') DO (call :do3 %%A)
-set /a free=%e2u:~0,-6% / (1074)
-
+set count=1
+for /f "tokens=* usebackq" %%f in (`wmic logicaldisk %SystemDrive% get Freespace^,Size /format:list`) do (
+  set tempvar!count!=%%f
+  set /a count=!count!+1
+)
+for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
+set /a all=%Size:~0,-6% / 1074
+set /a free=%Freespace:~0,-6% / 1074
 set /a used=%all%-%free%
 
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic os get version /format:list ^| findstr "^Version="`) do (set %%a=%%b)
-set osvers=%Version%
-
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic os get caption /format:list ^| findstr "^Caption="`) do (set %%a=%%b)
 set osname=%Caption%
 set osname=%osname:VistaT=Vista%
 if "%osname:~10%" == " Windows Vista Home Premium " set osname=%osname:~0,9%%osname:~10%
 
 for /F "tokens=1,* delims==" %%v in ('wmic path Win32_PerfFormattedData_PerfOS_System get SystemUptime /format:list ^| findstr "[0-9]"') do ( set "%%v=%%w" )
-set uptime=%SystemUptime%
 
 if "%OSVERSION%" == "5.1" ( goto :XP )
 
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic os get OSArchitecture /format:list ^| findstr "^OSArchitecture="`) do (set %%a=%%b)
-set architecture=%OSArchitecture%
-if "%architecture:~0,2%" == "32" (set ostype=x86)
-if "%architecture:~0,2%" == "64" (
-    set ostype=x64
-    goto :theme64
-)
+if "%AddressWidth%" == "64" ( goto :theme64 )
 
 :theme86
 if "%OSVERSION%" == "6.0" (
@@ -121,11 +131,6 @@ call :label "%Theme_NAME%"
 goto :endXP
 
 :XP
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic cpu get addresswidth /format:list ^| findstr "^AddressWidth="`) do (set %%a=%%b)
-set architecture=%AddressWidth%
-if "%architecture:~0,2%" == "32" (set ostype=x86)
-if "%architecture:~0,2%" == "64" (set ostype=x64)
-
 for /f "tokens=2,*" %%a in ('reg query HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager  /v ThemeActive ^| findstr ThemeActive') do ( set Theme_active=%%b )
 
 if "%Theme_active%" == "0" (
@@ -145,9 +150,6 @@ call :label "%Theme_NAME%"
 :endXP
 
 for /f "usebackq tokens=1,* delims==" %%a in (`wmic computersystem get model /format:list ^| findstr "^Model="`) do (set %%a=%%b)
-set HOST_NAME=%Model%
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic computersystem get manufacturer /format:list ^| findstr "^Manufacturer="`) do (set %%a=%%b)
-set HOST=%Manufacturer%
 
 ::Get Shell
 set shell_var=%COMSPEC%
@@ -172,14 +174,15 @@ for /f "tokens=2,*" %%a in ('reg query %WM_RegKey% /v %WM_RegVal% ^| findstr %WM
 :endWM
 
 :: Get motherboard
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic baseboard get product /format:list ^| findstr "^Product="`) do (set %%a=%%b)
-set MOBOmodel_NAME=%Product%
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic baseboard get manufacturer /format:list ^| findstr "^Manufacturer="`) do (set %%a=%%b)
-set MOBO_NAME=%Manufacturer%
+set count=1
+for /f "tokens=* usebackq" %%f in (`wmic baseboard get product^,manufacturer /format:list`) do (
+  set tempvar!count!=%%f
+  set /a count=!count!+1
+)
+for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
 
 :: User info
-set username=%userprofile:~26%
-if not "%OSVERSION%"=="5.00" if not "%OSVERSION%"=="5.0" if not "%OSVERSION%"=="5.1" if not "%OSVERSION%"=="5.2" set username=%userprofile:~9%
 set "s=%username%"
 set "len=1"
 for %%N in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
@@ -206,9 +209,9 @@ for /l %%x in (1, 1, %totallength%) do set "dashstring=!dashstring!^="
 set osname=%osname:~0,33%
 set cpu=%cpu:~0,35%
 set gpu=%gpu:~0,35%
-set MOBO_NAME=%MOBO_NAME:  =%
+set MOBO_NAME=%Manufacturer:  =%
 set MOBO_NAME=%MOBO_NAME:~0,20%
-set MOBOmodel_NAME=%MOBOmodel_NAME:~0,10%
+set MOBO_MODEL=%Product:~0,10%
 set themename=%themename:~0,35%
 if "%themename%" == "aero" (
     if "%OSVERSION%" == "6.2" set themename=metro
@@ -248,33 +251,33 @@ if "%usecolor%" == "yes" (
     colous %color1% %bgcolor% 0,0 "        Et:::ztt33EEE  "
     colous %color3% %bgcolor% 0,0 "@Ee.,      ..,  "
     colous %textcolor1% %bgcolor% 0,0 "OS: "
-    colous %textcolor2% %bgcolor% 0,0 "%osname%%ostype%"
+    colous %textcolor2% %bgcolor% 0,0 "%osname%%AddressWidth%-bit"
     echo.
     colous %color1% %bgcolor% 0,0 "       ;tt:::tt333EE7 "
     colous %color3% %bgcolor% 0,0 ";EEEEEEttttt33#  "
     colous %textcolor1% %bgcolor% 0,0 "Host: "
-    colous %textcolor2% %bgcolor% 0,0 "%HOST% %HOST_NAME%"
+    colous %textcolor2% %bgcolor% 0,0 "%Model%"
     echo.
     colous %color1% %bgcolor% 0,0 "      :Et:::zt333EEQ. "
     colous %color3% %bgcolor% 0,0 "SEEEEEttttt33QL  "
     colous %textcolor1% %bgcolor% 0,0 "Kernel:"
-    colous %textcolor2% %bgcolor% 0,0 " %osvers%"
+    colous %textcolor2% %bgcolor% 0,0 " %KernelVersion%"
     echo.
     colous %color1% %bgcolor% 0,0 "      it::::tt333EEF "
     colous %color3% %bgcolor% 0,0 "@EEEEEEttttt33F   "
     colous %textcolor1% %bgcolor% 0,0 "Uptime: "
-    colous %textcolor2% %bgcolor% 0,0 "%uptime%s"
+    colous %textcolor2% %bgcolor% 0,0 "%SystemUptime%s"
     echo.
     colous %color1% %bgcolor% 0,0 "     ;3=*^```'*4EEV "
     colous %color3% %bgcolor% 0,0 ":EEEEEEttttt33@.   "
     colous %textcolor1% %bgcolor% 0,0 "Resolution:"
-    colous %textcolor2% %bgcolor% 0,0 " %width%x%height%"
+    colous %textcolor2% %bgcolor% 0,0 " %CurrentHorizontalResolution%x%CurrentVerticalResolution%"
     echo.
     colous %color2% %bgcolor% 0,0 "     ,.=::::it=., "
     colous %color1% %bgcolor% 0,0 "` "
     colous %color3% %bgcolor% 0,0 "@EEEEEEtttz33QF    "
     colous %textcolor1% %bgcolor% 0,0 "Motherboard: "
-    colous %textcolor2% %bgcolor% 0,0 "%MOBO_NAME% - %MOBOmodel_NAME%"
+    colous %textcolor2% %bgcolor% 0,0 "%MOBO_NAME% - %MOBO_MODEL%"
     echo.
     colous %color2% %bgcolor% 0,0 "    ;::::::::zt33)   "
     colous %color3% %bgcolor% 0,0 "'4EEEtttji3P*     "
@@ -307,7 +310,7 @@ if "%usecolor%" == "yes" (
     colous %color4% %bgcolor% 0,0 ";EEEtttt:::::tZ`       "
     colous %textcolor1% %bgcolor% 0,0 "Memory: "
     colous %color4% %bgcolor% 0,0 "%usedram% MB "
-    colous %textcolor2% %bgcolor% 0,0 "/ %totalram2% MB"
+    colous %textcolor2% %bgcolor% 0,0 "/ %totalram% MB"
     echo.
     colous %color2% %bgcolor% 0,0 "             `"
     colous %color4% %bgcolor% 0,0 " :EEEEtttt::::z7         "
@@ -331,51 +334,22 @@ if "%usecolor%" == "yes" (
 ) else (
     echo.         ,.=:^^!^^!t3Z3z.,                 %username%@%COMPUTERNAME%
     echo.        :tt:::tt333EE3                 %dashstring%
-    echo.        Et:::ztt33EEE  @Ee.,      ..,  OS: %osname%%ostype%
-    echo.       ;tt:::tt333EE7 ;EEEEEEttttt33#  Host: %HOST% %HOST_NAME%
-    echo.      :Et:::zt333EEQ. SEEEEEttttt33QL  Kernel: %osvers%
-    echo.      it::::tt333EEF @EEEEEEttttt33F   Uptime: %uptime%s
-    echo.     ;3=*^^```'*4EEV :EEEEEEttttt33@.   Resolution: %width%x%height%
-    echo.     ,.=::::it=., ` @EEEEEEtttz33QF    Motherboard: %MOBO_NAME% - %MOBOmodel_NAME%
+    echo.        Et:::ztt33EEE  @Ee.,      ..,  OS: %osname%%AddressWidth%-bit
+    echo.       ;tt:::tt333EE7 ;EEEEEEttttt33#  Host: %Model%
+    echo.      :Et:::zt333EEQ. SEEEEEttttt33QL  Kernel: %KernelVersion%
+    echo.      it::::tt333EEF @EEEEEEttttt33F   Uptime: %SystemUptime%s
+    echo.     ;3=*^^```'*4EEV :EEEEEEttttt33@.   Resolution: %CurrentHorizontalResolution%x%CurrentVerticalResolution%
+    echo.     ,.=::::it=., ` @EEEEEEtttz33QF    Motherboard: %MOBO_NAME% - %MOBO_MODEL%
     echo.    ;::::::::zt33^)   '4EEEtttji3P*     Shell: %shell_NAME%
     echo.   :t::::::::tt33 :Z3z..  `` ,..g.     Theme: %themename%
     echo.   i::::::::zt33F AEEEtttt::::ztF      WM: %WM_NAME%
     echo.  ;:::::::::t33V ;EEEttttt::::t3       CPU: %cpu%
     echo.  E::::::::zt33L @EEEtttt::::z3F       GPU: %gpu%
-    echo. {3=*^^```'*4E3^) ;EEEtttt:::::tZ`       Memory: %usedram% MB / %totalram2% MB
+    echo. {3=*^^```'*4E3^) ;EEEtttt:::::tZ`       Memory: %usedram% MB / %totalram% MB
     echo.             ` :EEEEtttt::::z7         Disk: [%SYSTEMDRIVE%] %used% GB / %all% GB
     echo.                 'VEzjt:;;z^>*`
 )
 goto :EnOF
-
-:set
-if not "%~1" == "" (2>nul set %~2=%1)
-goto :EOF
-
-
-:do
-set c%p%u="%~1"
-set /a p=p+1
-goto :EOF
-
-:do2
-set d%h%u=%~1
-set /a h=h+1
-goto :EOF
-
-:do3
-set e%i%u=%~1
-set /a i=i+1
-goto :EOF
-
-:do4
-set i%d%h=%~1
-set /a d=d+1
-goto :EOF
-
-:addy
-set /a ycord=%1+1
-goto :EOF
 
 :label
 set themename=%~n1
