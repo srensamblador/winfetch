@@ -3,16 +3,12 @@ setlocal enabledelayedexpansion
 
 set color=dull
 set usecolor=no
-set p=1
-set i=1
-set h=1
-set d=1
 set temppath=%PATH%;%~dp0
 
 :args
 if "%1" == "/?" (goto :credits)
 if "%1" == "/n" (
-    for %%X in (colous.exe) do (set FOUND=%%~$temppath:X)
+    for %%X in (colous.exe) do set FOUND=%%~$temppath:X
     if defined FOUND (
         set usecolor=yes
     ) else (
@@ -22,7 +18,7 @@ if "%1" == "/n" (
 	goto :args
 )
 if "%1" == "/b" (
-    for %%X in (colous.exe) do (set FOUND=%%~$temppath:X)
+    for %%X in (colous.exe) do set FOUND=%%~$temppath:X
     if defined FOUND (
         set usecolor=yes
     	set color=bright
@@ -38,10 +34,6 @@ goto :args
 
 :main
 echo.
-
-for /f "tokens=2 delims=[]" %%i in ('ver') do set OSVersionString=%%i
-for /f "tokens=2-3 delims=. " %%i in ("%OSVersionString%") do set OSVERSION=%%i.%%j
-for /f "tokens=2-4 delims=. " %%i in ("%OSVersionString%") do set KernelVersion=%%i.%%j.%%k
 
 set count=1
 for /f "tokens=* usebackq" %%f in (`wmic path Win32_VideoController get caption^,CurrentVerticalResolution^,CurrentHorizontalResolution /format:list`) do (
@@ -71,16 +63,18 @@ set cpu=%cpu:(r)=%
 set cpu=%cpu:(c)=%
 
 set count=1
-for /f "tokens=* usebackq" %%f in (`wmic os get Caption^,FreePhysicalMemory^,TotalVisibleMemorySize /format:list`) do (
+for /f "tokens=* usebackq" %%f in (`wmic os get Caption^,Version^,FreePhysicalMemory^,TotalVisibleMemorySize /format:list`) do (
   set tempvar!count!=%%f
   set /a count=!count!+1
 )
 for /f "tokens=1,* delims==" %%a in ("%tempvar3%") do set %%a=%%b
 for /f "tokens=1,* delims==" %%a in ("%tempvar4%") do set %%a=%%b
 for /f "tokens=1,* delims==" %%a in ("%tempvar5%") do set %%a=%%b
+for /f "tokens=1,* delims==" %%a in ("%tempvar6%") do set %%a=%%b
 set /a totalram=%TotalVisibleMemorySize% / 1024
 set /a freeram=%FreePhysicalMemory% / 1024
 set /a usedram=%totalram% - %freeram%
+for /f "tokens=1-2 delims=. " %%i in ("%Version%") do set OSVERSION=%%i.%%j
 
 set count=1
 for /f "tokens=* usebackq" %%f in (`wmic logicaldisk %SystemDrive% get Freespace^,Size /format:list`) do (
@@ -97,7 +91,7 @@ set osname=%Caption%
 set osname=%osname:VistaT=Vista%
 if "%osname:~10%" == " Windows Vista Home Premium " set osname=%osname:~0,9%%osname:~10%
 
-for /F "tokens=1,* delims==" %%v in ('wmic path Win32_PerfFormattedData_PerfOS_System get SystemUptime /format:list ^| findstr "[0-9]"') do ( set "%%v=%%w" )
+for /F "tokens=1,* delims==" %%v in ('wmic path Win32_PerfFormattedData_PerfOS_System get SystemUptime /format:list ^| findstr "[0-9]"') do set "%%v=%%w"
 
 if "%OSVERSION%" == "5.1" ( goto :XP )
 
@@ -113,7 +107,7 @@ if "%OSVERSION%" == "6.0" (
 )
 reg query %Theme_RegKey% /v %Theme_RegVal% >nul || (set Theme_NAME="No_Theme_Name_Found" & goto :endTheme)
 set Theme_NAME=
-for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do ( set Theme_NAME=%%b )
+for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do set Theme_NAME=%%b
 call :label "%Theme_NAME%"
 goto :endTheme
 
@@ -123,7 +117,7 @@ set Theme_RegKey=HKCU\Software\Microsoft\Windows\CurrentVersion\ThemeManager
 set Theme_RegVal=DllName
 reg query %Theme_RegKey% /v %Theme_RegVal% >nul || (set Theme_NAME="No_Theme_Name_Found" & goto :endTheme)
 set Theme_NAME=
-for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do ( set Theme_NAME=%%b )
+for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do set Theme_NAME=%%b
 goto :endTheme
 
 :endTheme
@@ -131,7 +125,7 @@ call :label "%Theme_NAME%"
 goto :endXP
 
 :XP
-for /f "tokens=2,*" %%a in ('reg query HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager  /v ThemeActive ^| findstr ThemeActive') do ( set Theme_active=%%b )
+for /f "tokens=2,*" %%a in ('reg query HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ThemeManager  /v ThemeActive ^| findstr ThemeActive') do set Theme_active=%%b
 
 if "%Theme_active%" == "0" (
     set themename="Windows Classic"
@@ -143,34 +137,32 @@ set Theme_RegKey=HKCU\Software\Microsoft\Windows\CurrentVersion\ThemeManager
 set Theme_RegVal=DllName
 reg query %Theme_RegKey% /v %Theme_RegVal% >NUL || (set Theme_NAME="No_Theme_Name_Found" & goto :endXPTheme)
 set Theme_NAME=
-for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do ( set Theme_NAME=%%b )
+for /f "tokens=2,*" %%a in ('reg query %Theme_RegKey% /v %Theme_RegVal% ^| findstr %Theme_RegVal%') do set Theme_NAME=%%b
 call :label "%Theme_NAME%"
 )
 :endXPTheme
 :endXP
 
-for /f "usebackq tokens=1,* delims==" %%a in (`wmic computersystem get model /format:list ^| findstr "^Model="`) do (set %%a=%%b)
+for /f "usebackq tokens=1,* delims==" %%a in (`wmic computersystem get model /format:list ^| findstr "^Model="`) do set %%a=%%b
 
 ::Get Shell
 set shell_var=%COMSPEC%
 set var1=%shell_var%
 set i=0
 :loopprocess
-for /F "tokens=1* delims=\" %%A in ( "%var1%" ) do (
+for /F "tokens=1* delims=\" %%A in ("%var1%") do (
   set /A i+=1
   set var1=%%B
   goto loopprocess
 )
-for /F "tokens=%i% delims=\" %%G in ( "%shell_var%" ) do set last=%%G
+for /F "tokens=%i% delims=\" %%G in ("%shell_var%") do set last=%%G
 set shell_NAME=%last%
 
 ::Get Window Manager
 set WM_RegKey="HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
 set WM_RegVal=Shell
 reg query %WM_RegKey% /v %WM_RegVal% >NUL || (set WM_NAME="Explorer.exe" & goto :endWM)
-for /f "tokens=2,*" %%a in ('reg query %WM_RegKey% /v %WM_RegVal% ^| findstr %WM_RegVal%') do (
-    set WM_NAME=%%b
-)
+for /f "tokens=2,*" %%a in ('reg query %WM_RegKey% /v %WM_RegVal% ^| findstr %WM_RegVal%') do set WM_NAME=%%b
 :endWM
 
 :: Get motherboard
@@ -261,7 +253,7 @@ if "%usecolor%" == "yes" (
     colous %color1% %bgcolor% 0,0 "      :Et:::zt333EEQ. "
     colous %color3% %bgcolor% 0,0 "SEEEEEttttt33QL  "
     colous %textcolor1% %bgcolor% 0,0 "Kernel:"
-    colous %textcolor2% %bgcolor% 0,0 " %KernelVersion%"
+    colous %textcolor2% %bgcolor% 0,0 " %Version%"
     echo.
     colous %color1% %bgcolor% 0,0 "      it::::tt333EEF "
     colous %color3% %bgcolor% 0,0 "@EEEEEEttttt33F   "
@@ -336,7 +328,7 @@ if "%usecolor%" == "yes" (
     echo.        :tt:::tt333EE3                 %dashstring%
     echo.        Et:::ztt33EEE  @Ee.,      ..,  OS: %osname%%AddressWidth%-bit
     echo.       ;tt:::tt333EE7 ;EEEEEEttttt33#  Host: %Model%
-    echo.      :Et:::zt333EEQ. SEEEEEttttt33QL  Kernel: %KernelVersion%
+    echo.      :Et:::zt333EEQ. SEEEEEttttt33QL  Kernel: %Version%
     echo.      it::::tt333EEF @EEEEEEttttt33F   Uptime: %SystemUptime%s
     echo.     ;3=*^^```'*4EEV :EEEEEEttttt33@.   Resolution: %CurrentHorizontalResolution%x%CurrentVerticalResolution%
     echo.     ,.=::::it=., ` @EEEEEEtttz33QF    Motherboard: %MOBO_NAME% - %MOBO_MODEL%
@@ -362,13 +354,6 @@ set color2=
 set color3=
 set color4=
 set temppath=
-set p=
-set h=
-set i=
-for /l %%A IN (1,1,%p%) DO (set c%%Au=)
-for /l %%A IN (1,1,%h%) DO (set d%%Au=)
-for /l %%A IN (1,1,%i%) DO (set e%%Au=)
-set b=
 if "%usecolor%" == "yes" ( colous cursoron )
 exit /b
 goto :EOF
