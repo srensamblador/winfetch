@@ -85,8 +85,6 @@ if (-not ($IsWindows -or $PSVersionTable.PSVersion.Major -eq 5)) {
 $e = [char]0x1B
 $ansiRegex = '([\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[-a-zA-Z\d\/#&.:=?%@~_]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~])))'
 
-$is_pscore = $PSVersionTable.PSEdition.ToString() -eq 'Core'
-
 if (-not $configPath) {
     if ($env:WINFETCH_CONFIG_PATH) {
         $configPath = $env:WINFETCH_CONFIG_PATH
@@ -440,14 +438,11 @@ function info_colorbar {
 
 # ===== OS =====
 function info_os {
+    $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
+
     return @{
         title   = "OS"
-        content = if ($IsWindows -or $PSVersionTable.PSVersion.Major -eq 5) {
-            $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
-            "$($os.Caption.TrimStart('Microsoft ')) [$($os.OSArchitecture)]"
-        } else {
-            ($PSVersionTable.OS).TrimStart('Microsoft ')
-        }
+        content = "$($os.Caption.TrimStart('Microsoft ')) [$($os.OSArchitecture)]"
     }
 }
 
@@ -533,7 +528,7 @@ function info_resolution {
 # ===== TERMINAL =====
 # this section works by getting the parent processes of the current powershell instance.
 function info_terminal {
-    if (-not $is_pscore) {
+    if ($PSVersionTable.PSEdition.ToString() -ne 'Core') {
         $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $PID" -Property ParentProcessId -CimSession $cimSession).ParentProcessId
         for () {
             if ($parent.ProcessName -in 'powershell', 'pwsh', 'winpty-agent', 'cmd', 'zsh', 'bash') {
