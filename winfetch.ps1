@@ -771,11 +771,15 @@ function info_weather {
 
 # ===== IP =====
 function info_local_ip {
-    $local_ip = (Get-NetIPAddress | Where-Object {$_.AddressState -eq "Preferred" -and $_.ValidLifetime -lt "24:00:00"}).IPAddress
+    try {
+        $indexDefault = Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object -Property RouteMetric | Select-Object -First 1 | Select-Object -ExpandProperty ifIndex
+        $local_ip = Get-NetIPAddress -AddressFamily IPv4 -InterfaceIndex $indexDefault | Select-Object -ExpandProperty IPAddress
+    } catch {
+    }
     return @{
         title = "Local IP"
         content = if (-not $local_ip) {
-            "$e[91m(Network Error)"
+            "$e[91m(Unknown)"
         } else {
             $local_ip
         }
