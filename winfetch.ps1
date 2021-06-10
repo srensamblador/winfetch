@@ -4,11 +4,11 @@
 .VERSION 2.0.0
 .GUID 1c26142a-da43-4125-9d70-97555cbb1752
 .AUTHOR Kied Llaentenn and contributers
-.PROJECTURI https://github.com/lptstr/winfetch
+.PROJECTURI https://github.com/kiedtl/winfetch
 .COMPANYNAME
 .COPYRIGHT
 .TAGS neofetch screenfetch system-info commandline
-.LICENSEURI https://github.com/lptstr/winfetch/blob/master/LICENSE
+.LICENSEURI https://github.com/kiedtl/winfetch/blob/master/LICENSE
 .ICONURI https://lptstr.github.io/lptstr-images/proj/winfetch/logo.png
 .EXTERNALMODULEDEPENDENCIES
 .REQUIREDSCRIPTS
