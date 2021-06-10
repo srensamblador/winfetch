@@ -2,16 +2,14 @@
 
 System information tool written in Batch.
 
-![xp-screenshot](https://user-images.githubusercontent.com/46838874/109414370-83703d80-79d8-11eb-8bc1-7cece442da11.png)
+![xp-screenshot](https://user-images.githubusercontent.com/46838874/121505388-6946f200-ca00-11eb-8443-44271d7ed274.png)
 
 ```
-Usage: winfetch [/n] [/b] [/?]
+Usage: winfetch [/c] [/?]
 
 Options:
-    /n             Use colors. Requires colous.
-    /b             Use (brighter) colors. Requires colous.
+    /c             Show colors (using ANSI escape sequences).
     /?             Display this text.
-Note: Output redirection does not work with colous.
 
 Thanks to:
     anonymous
@@ -23,4 +21,4 @@ Thanks to:
 ```
 
 ---
-[Colous](https://diamam.blogspot.com/) is a console I/O server written for Command Prompt. The binary's VirusTotal listing can be seen [here](https://www.virustotal.com/gui/file/8dd1f2fe85aa9c47a19edd546276dd0a4cd840519cc9b944ad21633df213b99a/detection).
+Refer to the [wiki page](https://github.com/lptstr/winfetch/wiki/ANSI-Colors) for information on how to enable colors.

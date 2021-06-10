@@ -1,27 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set color=dull
 set usecolor=no
-set temppath=%PATH%;%~dp0
+for /f "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do set E=%%b
 
 :: Argument Parser
 :args
 if "%1" == "/?" goto :credits
-if "%1" == "/n" (
-  for %%X in (colous.exe) do set FOUND=%%~$temppath:X
-  if defined FOUND (
-    set usecolor=yes
-  ) else echo.Warning: colous not found in PATH.
-	shift
-	goto :args
-)
-if "%1" == "/b" (
-  for %%X in (colous.exe) do set FOUND=%%~$temppath:X
-  if defined FOUND (
-    set usecolor=yes
-    set color=bright
-  ) else echo.Warning: colous not found in PATH.
+if "%1" == "/c" (
+  set usecolor=yes
 	shift
 	goto :args
 )
@@ -209,121 +196,27 @@ for %%N in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do (
 set machinelength=%len%
 set /a totallength=%userlength% + 1 + %machinelength%
 set dashstring=
-for /l %%x in (1, 1, %totallength%) do set "dashstring=!dashstring!^="
+for /l %%x in (1, 1, %totallength%) do set "dashstring=!dashstring!-"
 
 
-:: Preparing to print
-if "%color%" == "bright" (
-  set color1=12
-  set color2=9
-  set color3=10
-  set color4=14
-) else (
-  set color1=4
-  set color2=1
-  set color3=2
-  set color4=6
-)
-set bgcolor=0
-set textcolor1=7
-set textcolor2=15
-
-if "%usecolor%" == "yes" colous gety
-set sycord=%errorlevel%
-set ycord=%errorlevel%
-
+:: Printing info
 if "%usecolor%" == "yes" (
-  colous %color1% %bgcolor% 0,0 "         ,.=:^!^!t3Z3z.,                 "
-  colous %textcolor1% %bgcolor% 0,0 "%username%"
-  colous %textcolor2% %bgcolor% 0,0 "@"
-  colous %textcolor1% %bgcolor% 0,0 "%COMPUTERNAME%"
-  echo.
-  colous %color1% %bgcolor% 0,0 "        :tt:::tt333EE3                 "
-  colous %color3% %bgcolor% 0,0 "%dashstring%"
-  echo.
-  colous %color1% %bgcolor% 0,0 "        Et:::ztt33EEE  "
-  colous %color3% %bgcolor% 0,0 "@Ee.,      ..,  "
-  colous %textcolor1% %bgcolor% 0,0 "OS: "
-  colous %textcolor2% %bgcolor% 0,0 "%osname%%AddressWidth%-bit"
-  echo.
-  colous %color1% %bgcolor% 0,0 "       ;tt:::tt333EE7 "
-  colous %color3% %bgcolor% 0,0 ";EEEEEEttttt33#  "
-  colous %textcolor1% %bgcolor% 0,0 "Host: "
-  colous %textcolor2% %bgcolor% 0,0 "%Model%"
-  echo.
-  colous %color1% %bgcolor% 0,0 "      :Et:::zt333EEQ. "
-  colous %color3% %bgcolor% 0,0 "SEEEEEttttt33QL  "
-  colous %textcolor1% %bgcolor% 0,0 "Kernel:"
-  colous %textcolor2% %bgcolor% 0,0 " %Version%"
-  echo.
-  colous %color1% %bgcolor% 0,0 "      it::::tt333EEF "
-  colous %color3% %bgcolor% 0,0 "@EEEEEEttttt33F   "
-  colous %textcolor1% %bgcolor% 0,0 "Uptime: "
-  colous %textcolor2% %bgcolor% 0,0 "%SystemUptime%s"
-  echo.
-  colous %color1% %bgcolor% 0,0 "     ;3=*^```'*4EEV "
-  colous %color3% %bgcolor% 0,0 ":EEEEEEttttt33@.   "
-  colous %textcolor1% %bgcolor% 0,0 "Resolution:"
-  colous %textcolor2% %bgcolor% 0,0 " %CurrentHorizontalResolution%x%CurrentVerticalResolution%"
-  echo.
-  colous %color2% %bgcolor% 0,0 "     ,.=::::it=., "
-  colous %color1% %bgcolor% 0,0 "` "
-  colous %color3% %bgcolor% 0,0 "@EEEEEEtttz33QF    "
-  colous %textcolor1% %bgcolor% 0,0 "Motherboard: "
-  colous %textcolor2% %bgcolor% 0,0 "%MOBO_NAME% - %MOBO_MODEL%"
-  echo.
-  colous %color2% %bgcolor% 0,0 "    ;::::::::zt33)   "
-  colous %color3% %bgcolor% 0,0 "'4EEEtttji3P*     "
-  colous %textcolor1% %bgcolor% 0,0 "Shell: "
-  colous %textcolor2% %bgcolor% 0,0 "%shell_NAME%"
-  echo.
-  colous %color2% %bgcolor% 0,0 "   :t::::::::tt33 "
-  colous %color4% %bgcolor% 0,0 ":Z3z..  "
-  colous %color3% %bgcolor% 0,0 "`` "
-  colous %color4% %bgcolor% 0,0 ",..g.     "
-  colous %textcolor1% %bgcolor% 0,0 "Theme: "
-  colous %textcolor2% %bgcolor% 0,0 %themename%
-  echo.
-  colous %color2% %bgcolor% 0,0 "   i::::::::zt33F "
-  colous %color4% %bgcolor% 0,0 "AEEEtttt::::ztF      "
-  colous %textcolor1% %bgcolor% 0,0 "WM: "
-  colous %textcolor2% %bgcolor% 0,0 "%WM_NAME%"
-  echo.
-  colous %color2% %bgcolor% 0,0 "  ;:::::::::t33V "
-  colous %color4% %bgcolor% 0,0 ";EEEttttt::::t3       "
-  colous %textcolor1% %bgcolor% 0,0 "CPU: "
-  colous %textcolor2% %bgcolor% 0,0 "%cpu%"
-  echo.
-  colous %color2% %bgcolor% 0,0 "  E::::::::zt33L "
-  colous %color4% %bgcolor% 0,0 "@EEEtttt::::z3F       "
-  colous %textcolor1% %bgcolor% 0,0 "GPU: "
-  colous %textcolor2% %bgcolor% 0,0 "%gpu%"
-  echo.
-  colous %color2% %bgcolor% 0,0 " {3=*^```'*4E3) "
-  colous %color4% %bgcolor% 0,0 ";EEEtttt:::::tZ`       "
-  colous %textcolor1% %bgcolor% 0,0 "Memory: "
-  colous %color4% %bgcolor% 0,0 "%usedram% MB "
-  colous %textcolor2% %bgcolor% 0,0 "/ %totalram% MB"
-  echo.
-  colous %color2% %bgcolor% 0,0 "             `"
-  colous %color4% %bgcolor% 0,0 " :EEEEtttt::::z7         "
-  colous %textcolor1% %bgcolor% 0,0 "Disk: "
-  colous %textcolor2% %bgcolor% 0,0 "[%SYSTEMDRIVE%] "
-  colous %color3% %bgcolor% 0,0 "%used% GB "
-  colous %textcolor2% %bgcolor% 0,0 "/ %all% GB"
-  echo.
-  colous %color2% %bgcolor% 0,0 "                "
-  colous %color4% %bgcolor% 0,0 " 'VEzjt:;;z>*`       "
-  colous %textcolor2% %bgcolor% 0,0 "  "
-  colous %textcolor2% 8 0,0 "   "
-  colous %textcolor2% 9 0,0 "   "
-  colous %textcolor2% 10 0,0 "   "
-  colous %textcolor2% 11 0,0 "   "
-  colous %textcolor2% 12 0,0 "   "
-  colous %textcolor2% 13 0,0 "   "
-  colous %textcolor2% 14 0,0 "   "
-  colous %textcolor2% 15 0,0 "   "
-  echo.
+  echo. %E%[1;31m        ,.=:^^!^^!t3Z3z.,                 %E%[1;34m%username%%E%[0m@%E%[1;34m%COMPUTERNAME%%E%[0m
+  echo. %E%[1;31m       :tt:::tt333EE3                 %E%[0m%dashstring%
+  echo. %E%[1;31m       Et:::ztt33EEE  %E%[1;32m@Ee.,      ..,  %E%[1;34mOS%E%[0m: %osname%%AddressWidth%-bit
+  echo. %E%[1;31m      ;tt:::tt333EE7 %E%[1;32m;EEEEEEttttt33#  %E%[1;34mHost%E%[0m: %Model%
+  echo. %E%[1;31m     :Et:::zt333EEQ. %E%[1;32mSEEEEEttttt33QL  %E%[1;34mKernel%E%[0m: %Version%
+  echo. %E%[1;31m     it::::tt333EEF %E%[1;32m@EEEEEEttttt33F   %E%[1;34mUptime%E%[0m: %SystemUptime%s
+  echo. %E%[1;31m    ;3=*^^```'*4EEV %E%[1;32m:EEEEEEttttt33@.   %E%[1;34mResolution%E%[0m: %CurrentHorizontalResolution%x%CurrentVerticalResolution%
+  echo. %E%[1;34m    ,.=::::it=., %E%[1;31m` %E%[1;32m@EEEEEEtttz33QF    %E%[1;34mMotherboard%E%[0m: %MOBO_NAME% - %MOBO_MODEL%
+  echo. %E%[1;34m   ;::::::::zt33^)   %E%[1;32m'4EEEtttji3P*     %E%[1;34mShell%E%[0m: %shell_NAME%
+  echo. %E%[1;34m  :t::::::::tt33 %E%[1;33m:Z3z..  %E%[1;32m`` %E%[1;33m,..g.     %E%[1;34mTheme%E%[0m: %themename%
+  echo. %E%[1;34m  i::::::::zt33F %E%[1;33mAEEEtttt::::ztF      %E%[1;34mWM%E%[0m: %WM_NAME%
+  echo. %E%[1;34m ;:::::::::t33V %E%[1;33m;EEEttttt::::t3       %E%[1;34mCPU%E%[0m: %cpu%
+  echo. %E%[1;34m E::::::::zt33L %E%[1;33m@EEEtttt::::z3F       %E%[1;34mGPU%E%[0m: %gpu%
+  echo. %E%[1;34m{3=*^^```'*4E3^) %E%[1;33m;EEEtttt:::::tZ`       %E%[1;34mMemory%E%[0m: %E%[33m%usedram% MB%E%[0m / %totalram% MB
+  echo. %E%[1;34m            ` %E%[1;33m:EEEEtttt::::z7         %E%[1;34mDisk%E%[0m: [%SYSTEMDRIVE%] %E%[32m%used% GB%E%[0m / %all% GB
+  echo. %E%[1;33m                'VEzjt:;;z^>*`         %E%[40m  %E%[41m  %E%[42m  %E%[43m  %E%[44m  %E%[45m  %E%[46m  %E%[47m  %E%[100m  %E%[101m  %E%[102m  %E%[103m  %E%[104m  %E%[105m  %E%[106m  %E%[107m  %E%[0m
 ) else (
   echo.         ,.=:^^!^^!t3Z3z.,                 %username%@%COMPUTERNAME%
   echo.        :tt:::tt333EE3                 %dashstring%
@@ -349,24 +242,15 @@ set themename=%~n1
 goto :EOF
 
 :EnOF
-set color=
-set color1=
-set color2=
-set color3=
-set color4=
-set temppath=
-if "%usecolor%" == "yes" colous cursoron
 exit /b
 goto :EOF
 
 :credits
-echo.Usage: winfetch [/n] [/b] [/?]
+echo.Usage: winfetch [/c] [/?]
 echo.
 echo.Options:
-echo.    /n             Use colors. Requires colous.
-echo.    /b             Use (brighter) colors. Requires colous.
+echo.    /c             Show colors (using ANSI escape sequences).
 echo.    /?             Display this text.
-echo.Note: Output redirection does not work with colous.
 echo.
 echo.Thanks to:
 echo.    anonymous
@@ -377,5 +261,4 @@ echo.    Sk8rjwd
 echo.    rashil2000
 echo.
 
-if "%usecolor%" == "yes" colous cursoron
 goto :EOF
