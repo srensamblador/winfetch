@@ -28,7 +28,7 @@ The information by default is displayed alongside your operating system's logo. 
 According to [benchmarks](https://github.com/lptstr/winfetch/wiki/Winfetch-vs-Neofetch) done with Hyperfine, Winfetch on Windows is faster than Neofetch running on Bash emulators like MSYS (Git Bash) or Cygwin.
 
 
-#### More: \[[Installation](https://github.com/lptstr/winfetch/wiki/Installation)\] \[[Configuration](https://github.com/lptstr/winfetch/wiki/Configuration)\] \[[Usage](https://github.com/lptstr/winfetch/wiki)\]
+#### More: \[[Installation](https://github.com/lptstr/winfetch/wiki/Installation)\] \[[Configuration](https://github.com/lptstr/winfetch/wiki/Configuration)\] \[[Colors](https://github.com/lptstr/winfetch/wiki/ANSI-Colors)\]
 
 ---
 
