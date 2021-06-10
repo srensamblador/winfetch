@@ -2,9 +2,9 @@
 
 <br />
 <p align="center">
-<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/lptstr/winfetch.svg">
-<img alt="GitHub license" src="https://img.shields.io/github/license/lptstr/winfetch.svg">
-<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/lptstr/winfetch.svg">
+<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/kiedtl/winfetch.svg">
+<img alt="GitHub license" src="https://img.shields.io/github/license/kiedtl/winfetch.svg">
+<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/kiedtl/winfetch.svg">
 </p>
 
 <br />
@@ -25,11 +25,11 @@ The information by default is displayed alongside your operating system's logo. 
 </p>
 <br />
 
-According to [benchmarks](https://github.com/lptstr/winfetch/wiki/Winfetch-vs-Neofetch) done with Hyperfine, Winfetch on Windows is faster than Neofetch running on Bash emulators like MSYS (Git Bash) or Cygwin.
+According to [benchmarks](https://github.com/kiedtl/winfetch/wiki/Winfetch-vs-Neofetch) done with Hyperfine, Winfetch on Windows is faster than Neofetch running on Bash emulators like MSYS (Git Bash) or Cygwin.
 
 
-#### More: \[[Installation](https://github.com/lptstr/winfetch/wiki/Installation)\] \[[Configuration](https://github.com/lptstr/winfetch/wiki/Configuration)\] \[[Colors](https://github.com/lptstr/winfetch/wiki/ANSI-Colors)\]
+#### More: \[[Installation](https://github.com/kiedtl/winfetch/wiki/Installation)\] \[[Configuration](https://github.com/kiedtl/winfetch/wiki/Configuration)\] \[[Colors](https://github.com/kiedtl/winfetch/wiki/ANSI-Colors)\]
 
 ---
 
-###### _For old systems, use the [legacy branch](https://github.com/lptstr/winfetch/tree/legacy)._
+###### _For old systems, use the [legacy branch](https://github.com/kiedtl/winfetch/tree/legacy)._
