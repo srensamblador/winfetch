@@ -50,7 +50,7 @@
 .PARAMETER showdisks
     Configure which disks are shown, use '-showdisks *' to show all.
 .PARAMETER showpkgs
-    Configure which package managers are shown, e.g. '-showpkgs scoop,choco'.
+    Configure which package managers are shown, e.g. '-showpkgs winget,scoop,choco'.
 .INPUTS
     System.String
 .OUTPUTS
@@ -236,7 +236,7 @@ $defaultConfig = @'
 
 # Configure which package managers are shown
 # disabling unused ones will improve speed
-# $ShowPkgs = @("scoop", "choco")
+# $ShowPkgs = @("winget", "scoop", "choco")
 
 # Configure how to show info for levels
 # Default is for text only.
@@ -662,6 +662,14 @@ function info_pwsh {
 # ===== PACKAGES =====
 function info_pkgs {
     $pkgs = @()
+
+    if ("winget" -in $ShowPkgs -and (Get-Command -Name winget -ErrorAction Ignore)) {
+        $wingetpkg = (winget list | Where-Object {$_.Trim("`n`r`t`b-\|/ ").Length -ne 0} | Measure-Object).Count - 1
+
+        if ($wingetpkg) {
+            $pkgs += "$wingetpkg"
+        }
+    }
 
     if ("choco" -in $ShowPkgs -and (Get-Command -Name choco -ErrorAction Ignore)) {
         $chocopkg = (& clist -l)[-1].Split(' ')[0] - 1
