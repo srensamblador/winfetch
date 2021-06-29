@@ -524,10 +524,10 @@ function info_resolution {
 # this section works by getting the parent processes of the current powershell instance.
 function info_terminal {
     if ($PSVersionTable.PSEdition.ToString() -ne 'Core') {
-        $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $PID" -Property ParentProcessId -CimSession $cimSession).ParentProcessId
+        $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $PID" -Property ParentProcessId -CimSession $cimSession).ParentProcessId -ErrorAction Ignore
         for () {
             if ($parent.ProcessName -in 'powershell', 'pwsh', 'winpty-agent', 'cmd', 'zsh', 'bash') {
-                $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $($parent.ID)" -Property ParentProcessId -CimSession $cimSession).ParentProcessId
+                $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $($parent.ID)" -Property ParentProcessId -CimSession $cimSession).ParentProcessId -ErrorAction Ignore
                 continue
             }
             break
@@ -542,18 +542,19 @@ function info_terminal {
             break
         }
     }
-    try {
-        $terminal = switch ($parent.ProcessName) {
-            { $PSItem -in 'explorer', 'conhost' } { 'Windows Console' }
-            'Console' { 'Console2/Z' }
-            'ConEmuC64' { 'ConEmu' }
-            'WindowsTerminal' { 'Windows Terminal' }
-            'FluentTerminal.SystemTray' { 'Fluent Terminal' }
-            'Code' { 'Visual Studio Code' }
-            default { $PSItem }
-        }
-    } catch {
-        $terminal = $parent.ProcessName
+
+    $terminal = switch ($parent.ProcessName) {
+        { $PSItem -in 'explorer', 'conhost' } { 'Windows Console' }
+        'Console' { 'Console2/Z' }
+        'ConEmuC64' { 'ConEmu' }
+        'WindowsTerminal' { 'Windows Terminal' }
+        'FluentTerminal.SystemTray' { 'Fluent Terminal' }
+        'Code' { 'Visual Studio Code' }
+        default { $PSItem }
+    }
+
+    if (-not $terminal) {
+        $terminal = "$e[91m(Unknown)"
     }
 
     return @{
