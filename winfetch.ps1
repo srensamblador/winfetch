@@ -238,6 +238,17 @@ $defaultConfig = @'
 # disabling unused ones will improve speed
 # $ShowPkgs = @("winget", "scoop", "choco")
 
+# Use the following option to specify custom package managers.
+# Create a function with that name as suffix, and which returns
+# the number of packages. Two examples are shown here:
+# $CustomPkgs = @("cargo", "just-install")
+# function info_pkg_cargo {
+#     return (cargo install --list | Where-Object {$_ -like "*:" }).Length
+# }
+# function info_pkg_just-install {
+#     return (just-install list).Length
+# }
+
 # Configure how to show info for levels
 # Default is for text only.
 # 'bar' is for bar only.
@@ -694,6 +705,13 @@ function info_pkgs {
 
         if ($scooppkg) {
             $pkgs += "$scooppkg (scoop)"
+        }
+    }
+
+    foreach ($pkgitem in $CustomPkgs) {
+        if (Test-Path Function:"info_pkg_$pkgitem") {
+            $count = & "info_pkg_$pkgitem"
+            $pkgs += "$count ($pkgitem)"
         }
     }
 
