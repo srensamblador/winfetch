@@ -29,8 +29,8 @@
     Specify a path to a custom config file.
 .PARAMETER noimage
     Do not display any image or logo; display information only.
-.PARAMETER switchlogo
-    Switch the default Windows logo.
+.PARAMETER logo
+    Sets the version of Windows to derive the logo from.
 .PARAMETER blink
     Make the logo blink.
 .PARAMETER stripansi
@@ -64,7 +64,7 @@ param(
     [switch][alias('g')]$genconf,
     [string][alias('c')]$configpath,
     [switch][alias('n')]$noimage,
-    [switch][alias('l')]$switchlogo,
+    [string][alias('l')]$logo,
     [switch][alias('b')]$blink,
     [switch][alias('s')]$stripansi,
     [switch][alias('a')]$all,
@@ -173,7 +173,7 @@ if ($help) {
 # ===== VARIABLES =====
 $cimSession = New-CimSession
 $buildVersion = "$([System.Environment]::OSVersion.Version)"
-$legacylogo = $buildVersion -like "6.1*"
+$os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
 $COLUMNS = 35
 $GAP = 3
 
@@ -212,8 +212,8 @@ $defaultConfig = @'
 # $image = "~/winfetch.png"
 # $noimage = $true
 
-# Switch the default Windows logo
-# $switchlogo = $true
+# Set the version of Windows to derive the logo from.
+# $logo = "Windows 10"
 
 # Make the logo blink
 # $blink = $true
@@ -334,7 +334,6 @@ if ($config.GetType() -eq [string]) {
 }
 
 $t = if ($blink) { "5" } else { "1" }
-if ($switchlogo) { $legacylogo = -not $legacylogo }
 
 # ===== IMAGE =====
 $img = if (-not $noimage) {
@@ -377,46 +376,79 @@ $img = if (-not $noimage) {
         $NewImage.Dispose()
         $OldImage.Dispose()
 
-    } elseif ($legacylogo) {
-        @(
-            "${e}[${t};31m        ,.=:!!t3Z3z.,               "
-            "${e}[${t};31m       :tt:::tt333EE3               "
-            "${e}[${t};31m       Et:::ztt33EEE  ${e}[32m@Ee.,      ..,"
-            "${e}[${t};31m      ;tt:::tt333EE7 ${e}[32m;EEEEEEttttt33#"
-            "${e}[${t};31m     :Et:::zt333EEQ. ${e}[32mSEEEEEttttt33QL"
-            "${e}[${t};31m     it::::tt333EEF ${e}[32m@EEEEEEttttt33F "
-            "${e}[${t};31m    ;3=*^``````'*4EEV ${e}[32m:EEEEEEttttt33@. "
-            "${e}[${t};34m    ,.=::::it=., ${e}[31m`` ${e}[32m@EEEEEEtttz33QF  "
-            "${e}[${t};34m   ;::::::::zt33)   ${e}[32m'4EEEtttji3P*   "
-            "${e}[${t};34m  :t::::::::tt33 ${e}[33m:Z3z..  ${e}[32m```` ${e}[33m,..g.   "
-            "${e}[${t};34m  i::::::::zt33F ${e}[33mAEEEtttt::::ztF    "
-            "${e}[${t};34m ;:::::::::t33V ${e}[33m;EEEttttt::::t3     "
-            "${e}[${t};34m E::::::::zt33L ${e}[33m@EEEtttt::::z3F     "
-            "${e}[${t};34m{3=*^``````'*4E3) ${e}[33m;EEEtttt:::::tZ``     "
-            "${e}[${t};34m            `` ${e}[33m:EEEEtttt::::z7       "
-            "${e}[${t};33m                'VEzjt:;;z>*``       "
-        )
     } else {
-        @(
-            "${e}[${t};34m                    ....,,:;+ccllll"
-            "${e}[${t};34m      ...,,+:;  cllllllllllllllllll"
-            "${e}[${t};34m,cclllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34m                                   "
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
-            "${e}[${t};34m``'ccllllllllll  lllllllllllllllllll"
-            "${e}[${t};34m      ``' \\*::  :ccllllllllllllllll"
-            "${e}[${t};34m                       ````````''*::cll"
-            "${e}[${t};34m                                 ````"
-        )
+        if (-not $logo) {
+            if ($os -Like "*Windows 11 *") {
+                $logo = "Windows 11"
+            } elseif ($os -Like "*Windows 10 *" -Or $os -Like "*Windows 8.1 *" -Or $os -Like "*Windows 8 *") {
+                $logo = "Windows 10"
+            } else {
+                $logo = "Windows 7"
+            }
+        }
+
+        if ($logo -eq "Windows 11") {
+            @(
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34m                                 "
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+                "${e}[${t};34mlllllllllllllll   lllllllllllllll"
+            )
+        } elseif ($logo -eq "Windows 10" -Or $logo -eq "Windows 8.1" -Or $logo -eq "Windows 8") {
+            @(
+                "${e}[${t};34m                    ....,,:;+ccllll"
+                "${e}[${t};34m      ...,,+:;  cllllllllllllllllll"
+                "${e}[${t};34m,cclllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34m                                   "
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34mllllllllllllll  lllllllllllllllllll"
+                "${e}[${t};34m``'ccllllllllll  lllllllllllllllllll"
+                "${e}[${t};34m      ``' \\*::  :ccllllllllllllllll"
+                "${e}[${t};34m                       ````````''*::cll"
+                "${e}[${t};34m                                 ````"
+            )
+        } elseif ($logo -eq "Windows 7" -Or $logo -eq "Windows Vista" -Or $logo -eq "Windows XP") {
+            @(
+                "${e}[${t};31m        ,.=:!!t3Z3z.,               "
+                "${e}[${t};31m       :tt:::tt333EE3               "
+                "${e}[${t};31m       Et:::ztt33EEE  ${e}[32m@Ee.,      ..,"
+                "${e}[${t};31m      ;tt:::tt333EE7 ${e}[32m;EEEEEEttttt33#"
+                "${e}[${t};31m     :Et:::zt333EEQ. ${e}[32mSEEEEEttttt33QL"
+                "${e}[${t};31m     it::::tt333EEF ${e}[32m@EEEEEEttttt33F "
+                "${e}[${t};31m    ;3=*^``````'*4EEV ${e}[32m:EEEEEEttttt33@. "
+                "${e}[${t};34m    ,.=::::it=., ${e}[31m`` ${e}[32m@EEEEEEtttz33QF  "
+                "${e}[${t};34m   ;::::::::zt33)   ${e}[32m'4EEEtttji3P*   "
+                "${e}[${t};34m  :t::::::::tt33 ${e}[33m:Z3z..  ${e}[32m```` ${e}[33m,..g.   "
+                "${e}[${t};34m  i::::::::zt33F ${e}[33mAEEEtttt::::ztF    "
+                "${e}[${t};34m ;:::::::::t33V ${e}[33m;EEEttttt::::t3     "
+                "${e}[${t};34m E::::::::zt33L ${e}[33m@EEEtttt::::z3F     "
+                "${e}[${t};34m{3=*^``````'*4E3) ${e}[33m;EEEtttt:::::tZ``     "
+                "${e}[${t};34m            `` ${e}[33m:EEEEtttt::::z7       "
+                "${e}[${t};33m                'VEzjt:;;z>*``       "
+            )
+        } else {
+            Write-Error 'The only version logos supported are Windows 11, Windows 10/8.1/8, and Windows 7/Vista/XP.'
+            exit 1
+        }
     }
 }
 
@@ -444,8 +476,6 @@ function info_colorbar {
 
 # ===== OS =====
 function info_os {
-    $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
-
     return @{
         title   = "OS"
         content = "$($os.Caption.TrimStart('Microsoft ')) [$($os.OSArchitecture)]"
