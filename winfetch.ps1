@@ -835,14 +835,20 @@ function info_battery {
 function info_locale {
     # `Get-WinUserLanguageList` has a regression bug on PowerShell v7.1+
     # https://github.com/PowerShell/PowerShellModuleCoverage/issues/18
-    # Fallback to `Get-WinSystemLocale` (which might be slightly inaccurate) for such cases
+    # A slight increase in response time is incurred as a result
+
+    $contentstring = $null
+    if ($PSVersionTable.PSVersion -like "7.1.*") {
+        Import-Module International -UseWindowsPowerShell -WarningAction SilentlyContinue
+        $contentstring = "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinUserLanguageList)[0].LocalizedName)"
+        Remove-Module International
+    } else {
+        $contentstring = "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinUserLanguageList)[0].LocalizedName)"
+    }
+
     return @{
         title = "Locale"
-        content = if ($PSVersionTable.PSVersion -like "7.1.*") {
-            "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinSystemLocale).DisplayName)"
-        } else {
-            "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinUserLanguageList)[0].LocalizedName)"
-        }
+        content = $contentstring
     }
 }
 
