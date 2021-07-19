@@ -176,7 +176,45 @@ $buildVersion = "$([System.Environment]::OSVersion.Version)"
 $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
 $COLUMNS = 35
 $GAP = 3
+Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
 
+namespace WinAPI
+{
+    public class DiskMethods
+    {
+        [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetLogicalDriveStringsW", SetLastError = true)]
+        private static extern int NativeGetLogicalDriveStringsW(
+            int nBufferLength,
+            char[] lpBuffer);
+
+        // Wrapper around the native function for error handling
+        public static char[] GetLogicalDriveStringsW()
+        {
+            int length = NativeGetLogicalDriveStringsW(0, null);
+            if (length == 0)
+                throw new Win32Exception();
+
+            char[] buffer = new char[length];
+            length = NativeGetLogicalDriveStringsW(length, buffer);
+            if (length == 0)
+                throw new Win32Exception();
+
+            return buffer;
+        }
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        public static extern bool GetDiskFreeSpaceEx(
+            string lpDirectoryName,
+            out ulong lpFreeBytesAvailable,
+            out ulong lpTotalNumberOfBytes,
+            out ulong lpTotalNumberOfFreeBytes);
+    }
+}
+'@
 
 # ===== CONFIGURATION =====
 $baseConfig = @(
@@ -671,22 +709,46 @@ function info_disk {
         }
     }
 
-    $disks = Get-CimInstance -ClassName Win32_LogicalDisk -Property Size,FreeSpace -CimSession $cimSession
+    # Convert System.String[] to System.Object[]
+    $rawDiskLetters = [WinAPI.DiskMethods]::GetLogicalDriveStringsW()
+    $allDiskLetters = @()
+    foreach ($entry in $rawDiskLetters) {
+        if ($entry -ne ":" -and $entry -ne "\" -and $entry + ":" -ne ":") {
+            $allDiskLetters += $entry + ":"
+        }
+    }
 
-    foreach ($diskInfo in $disks) {
-        foreach ($diskLetter in $showDisks) {
-            if ($diskInfo.DeviceID -eq $diskLetter -or $diskLetter -eq "*") {
-                $total = $diskInfo.Size
-                $used = $total - $diskInfo.FreeSpace
-		if ($total -gt 0) {
-		    $usage = [math]::floor(($used / $total * 100))
-		    [void]$lines.Add(@{
-		        title   = "Disk ($($diskInfo.DeviceID))"
-		        content = get_level_info "" $diskstyle $usage "$(to_units $used) / $(to_units $total)"
-		    })
-		}
-                break
+    # Verification stage
+    $diskLetters = @()
+    foreach ($diskLetter in $allDiskLetters) {
+        foreach ($showDiskLetter in $showDisks) {
+            if ($diskLetter -eq $showDiskLetter -or $showDiskLetter -eq "*") {
+                $diskLetters += $diskLetter
             }
+        }
+    }
+
+    foreach ($diskLetter in $diskLetters) {
+        $lpFreeBytesAvailable = 0
+        $lpTotalNumberOfBytes = 0
+        $lpTotalNumberOfFreeBytes = 0
+        $success = [WinAPI.DiskMethods]::GetDiskFreeSpaceEx($diskLetter, [ref] $lpFreeBytesAvailable, [ref] $lpTotalNumberOfBytes, [ref] $lpTotalNumberOfFreeBytes)
+        $total = $lpTotalNumberOfBytes
+        $used = $total - $lpTotalNumberOfFreeBytes
+
+        if (-not $success) {
+            [void]$lines.Add(@{
+                title   = "Disk ($diskLetter)"
+                content = "(failed to get disk usage)"
+            })
+        }
+        
+        if ($total -gt 0) {
+            $usage = [math]::floor(($used / $total * 100))
+            [void]$lines.Add(@{
+                title   = "Disk ($diskLetter)"
+                content = get_level_info "" $diskstyle $usage "$(to_units $used) / $(to_units $total)"
+            })
         }
     }
 
