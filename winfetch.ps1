@@ -1,7 +1,7 @@
 #requires -version 5
 
 <#PSScriptInfo
-.VERSION 2.0.0
+.VERSION 2.2.0
 .GUID 1c26142a-da43-4125-9d70-97555cbb1752
 .AUTHOR Kied Llaentenn and contributers
 .PROJECTURI https://github.com/kiedtl/winfetch
