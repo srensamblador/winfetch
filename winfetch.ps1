@@ -537,7 +537,7 @@ function info_motherboard {
 function info_title {
     return @{
         title   = ""
-        content = "${e}[1;34m{0}${e}[0m@${e}[1;34m{1}${e}[0m" -f [System.Environment]::UserName,$env:COMPUTERNAME
+        content = "${e}[1;33m{0}${e}[0m@${e}[1;33m{1}${e}[0m" -f [System.Environment]::UserName,$env:COMPUTERNAME
     }
 }
 
@@ -1001,7 +1001,7 @@ foreach ($item in $config) {
     }
 
     foreach ($line in $info) {
-        $output = "$e[1;34m$($line["title"])$e[0m"
+        $output = "$e[1;33m$($line["title"])$e[0m"
 
         if ($line["title"] -and $line["content"]) {
             $output += ": "
