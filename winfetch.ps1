@@ -1,3 +1,4 @@
+#!/usr/bin/env pwsh
 #requires -version 5
 
 <#PSScriptInfo
@@ -604,10 +605,11 @@ function info_resolution {
 # ===== TERMINAL =====
 # this section works by getting the parent processes of the current powershell instance.
 function info_terminal {
+    $programs = 'powershell', 'pwsh', 'winpty-agent', 'cmd', 'zsh', 'bash', 'fish', 'env', 'nu', 'elvish', 'csh', 'tcsh', 'python', 'xonsh'
     if ($PSVersionTable.PSEdition.ToString() -ne 'Core') {
         $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $PID" -Property ParentProcessId -CimSession $cimSession).ParentProcessId -ErrorAction Ignore
         for () {
-            if ($parent.ProcessName -in 'powershell', 'pwsh', 'winpty-agent', 'cmd', 'zsh', 'bash') {
+            if ($parent.ProcessName -in $programs) {
                 $parent = Get-Process -Id (Get-CimInstance -ClassName Win32_Process -Filter "ProcessId = $($parent.ID)" -Property ParentProcessId -CimSession $cimSession).ParentProcessId -ErrorAction Ignore
                 continue
             }
@@ -616,7 +618,7 @@ function info_terminal {
     } else {
         $parent = (Get-Process -Id $PID).Parent
         for () {
-            if ($parent.ProcessName -in 'powershell', 'pwsh', 'winpty-agent', 'cmd', 'zsh', 'bash') {
+            if ($parent.ProcessName -in $programs) {
                 $parent = (Get-Process -Id $parent.ID).Parent
                 continue
             }
