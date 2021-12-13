@@ -891,12 +891,12 @@ function info_battery {
 
 # ===== LOCALE =====
 function info_locale {
-    # `Get-WinUserLanguageList` has a regression bug on PowerShell v7.1+
+    # `Get-WinUserLanguageList` has a regression bug on PowerShell Core
     # https://github.com/PowerShell/PowerShellModuleCoverage/issues/18
     # A slight increase in response time is incurred as a result
 
     $contentstring = $null
-    if ($PSVersionTable.PSVersion -like "7.1.*") {
+    if ($PSVersionTable.PSVersion.Major -gt 5) {
         Import-Module International -UseWindowsPowerShell -WarningAction SilentlyContinue
         $contentstring = "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinUserLanguageList)[0].LocalizedName)"
         Remove-Module International
