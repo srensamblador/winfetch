@@ -175,7 +175,7 @@ if ($help) {
 $cimSession = New-CimSession
 $buildVersion = "$([System.Environment]::OSVersion.Version)"
 $os = Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption,OSArchitecture -CimSession $cimSession
-$COLUMNS = 35
+$COLUMNS = 40
 $GAP = 3
 Add-Type -TypeDefinition @'
 using System;
@@ -251,6 +251,9 @@ $defaultConfig = @'
 
 # $image = "~/winfetch.png"
 # $noimage = $true
+
+# File with ASCII art to display instead of a logo or image
+# $ascii_file = "./winfetch.txt"
 
 # Set the version of Windows to derive the logo from.
 # $logo = "Windows 10"
@@ -378,7 +381,20 @@ $t = if ($blink) { "5" } else { "1" }
 
 # ===== IMAGE =====
 $img = if (-not $noimage) {
-    if ($image) {
+	if ($ascii_file) {
+		if (Test-Path -Path $ascii_file){
+		$array = @()
+		foreach ($line in Get-Content $ascii_file){
+			$array = $array + ${line}
+		}
+		@(
+			$array
+		)
+		}else{
+			Write-Error "Specified ASCII art file does not exist"
+			exit 1
+		}
+    }elseif ($image) {
         if ($image -eq 'wallpaper') {
             $image = (Get-ItemProperty -Path 'HKCU:\Control Panel\Desktop' -Name Wallpaper).Wallpaper
         }
@@ -891,12 +907,12 @@ function info_battery {
 
 # ===== LOCALE =====
 function info_locale {
-    # `Get-WinUserLanguageList` has a regression bug on PowerShell Core
+    # `Get-WinUserLanguageList` has a regression bug on PowerShell v7.1+
     # https://github.com/PowerShell/PowerShellModuleCoverage/issues/18
     # A slight increase in response time is incurred as a result
 
     $contentstring = $null
-    if ($PSVersionTable.PSVersion.Major -gt 5) {
+    if ($PSVersionTable.PSVersion -like "7.1.*") {
         Import-Module International -UseWindowsPowerShell -WarningAction SilentlyContinue
         $contentstring = "$((Get-WinHomeLocation).HomeLocation) - $((Get-WinUserLanguageList)[0].LocalizedName)"
         Remove-Module International
@@ -952,7 +968,6 @@ function info_public_ip {
     }
 }
 
-
 if (-not $stripansi) {
     # unhide the cursor after a terminating error
     trap { "$e[?25h"; break }
@@ -1007,8 +1022,8 @@ foreach ($item in $config) {
 
         if ($img) {
             if (-not $stripansi) {
-                # move cursor to column 40
-                $output = "$e[40G$output"
+                # move cursor to column 45
+                $output = "$e[45G$output"
             } else {
                 # write image progressively
                 $imgline = ("$($img[$writtenLines])"  -replace $ansiRegex, "").PadRight($COLUMNS)
