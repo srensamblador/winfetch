@@ -976,6 +976,16 @@ function info_public_ip {
     }
 }
 
+function img_length{
+	$max_len = -1
+	foreach ($line in $img){
+		if ($line.length -gt $max_len){
+			$max_len = $line.length
+		}
+	}
+	return $max_len
+}
+
 if (-not $stripansi) {
     # unhide the cursor after a terminating error
     trap { "$e[?25h"; break }
@@ -1025,13 +1035,17 @@ foreach ($item in $config) {
         if ($line["title"] -and $line["content"]) {
             $output += ": "
         }
-
+		
         $output += "$($line["content"])"
 
         if ($img) {
             if (-not $stripansi) {
-                # move cursor to column 45
-                $output = "$e[45G$output"
+                if ($ascii_file){
+					$len = img_length
+					$output = "$e[${len}G$output"
+				}else{
+					$output = "$e[40G$output"
+				}
             } else {
                 # write image progressively
                 $imgline = ("$($img[$writtenLines])"  -replace $ansiRegex, "").PadRight($COLUMNS)
