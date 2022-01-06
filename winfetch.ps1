@@ -255,7 +255,7 @@ $defaultConfig = @'
 # File with ASCII art to display instead of a logo or image
 # $ascii_file = "./winfetch.txt"
 
-# Colour for the ASCII art
+# Color for the ASCII art
 # $ascii_color = "31m"
 
 # Set the version of Windows to derive the logo from.

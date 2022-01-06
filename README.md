@@ -38,18 +38,18 @@ Inside of the config file we will find these lines:
 # File with ASCII art to display instead of a logo or image
 # $ascii_file = "./winfetch.txt"
 
-# Colour for the ASCII art
-# $ascii_colour = "31m"
+# Color for the ASCII art
+# $ascii_color = "31m"
 ```
 
 These are the new properties available in Winfetch-ASCII.
 
 - **ascii_file**: Path to the text file containing the art
-- **ascii_colour**: The art will be painted with this colour. If not specified it will be coloured white.
+- **ascii_color**: The art will be painted with this color. If not specified it will be colored white.
 
-> Refer to [ANSI escape characters](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) for the list of possible colours.
+> Refer to [ANSI escape characters](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) for the list of possible colors.
 
-> WARNING: Be mindful of your terminal's emulator capabilities when deciding on a colour as well as which ascii characters it's able to display
+> WARNING: Be mindful of your terminal's emulator capabilities when deciding on a color as well as which ascii characters it's able to display
 
 
 <p>
