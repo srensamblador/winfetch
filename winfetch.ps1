@@ -255,6 +255,9 @@ $defaultConfig = @'
 # File with ASCII art to display instead of a logo or image
 # $ascii_file = "./winfetch.txt"
 
+# Colour for the ASCII art
+# $ascii_color = "31m"
+
 # Set the version of Windows to derive the logo from.
 # $logo = "Windows 10"
 
@@ -384,8 +387,13 @@ $img = if (-not $noimage) {
 	if ($ascii_file) {
 		if (Test-Path -Path $ascii_file){
 		$array = @()
+		if ($ascii_color){
+			$color = "${e}[${t};${ascii_color}"
+		}else{
+			$color = "${e}[${t};37m"
+		}
 		foreach ($line in Get-Content $ascii_file){
-			$array = $array + ${line}
+			$array = $array + "${color}${line}"
 		}
 		@(
 			$array
